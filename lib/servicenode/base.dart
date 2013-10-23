@@ -10,6 +10,6 @@
 
 library servicenode;
 
-import '../core/base.dart';
+//import '../core/base.dart';
 
 part "servicenode.dart";

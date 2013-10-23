@@ -8,36 +8,46 @@ abstract class bus_type extends typeenum
 {
   static final String classpath='/base/typeenum/bus_type';
   String get enumname => 'bus.type';
+  const bus_type.ctor():super.ctor();
+  static const stack=const bt_stack();
+  static const queue=const bt_queue();
 }
 
 class bt_stack extends bus_type
 {
-  static final String classpath='/base/typeenum/bus_type/bt_stack'; 
+  static final String classpath='/base/typeenum/bus_type/bt_stack';
   String get typename => 'stack';
+  const bt_stack():super.ctor();
 }
 
 class bt_queue extends bus_type
 {
-  static final String classpath='/base/typeenum/bus_type/bt_stack'; 
+  static final String classpath='/base/typeenum/bus_type/bt_stack';
   String get typename => 'queue';
+  const bt_queue():super.ctor();
 }
 
 
 abstract class service_nodes extends typeenum
 {
-  static final String classpath='/base/typeenum/service_nodes';   
+  static final String classpath='/base/typeenum/service_nodes';
   String get enumname => 'service.nodes';
+  const service_nodes.ctor():super.ctor();
+  static const single=const sn_single();
+  static const multiple=const sn_multiple();
 }
 
 class sn_single extends service_nodes
 {
-  static final String classpath='/base/typeenum/service_nodes/sn_single'; 
+  static final String classpath='/base/typeenum/service_nodes/sn_single';
   String get typename => 'single';
+  const sn_single():super.ctor();
 }
 
 class sn_multiple extends service_nodes
 {
-  static final String classpath='/base/typeenum/service_nodes/sn_multiple'; 
+  static final String classpath='/base/typeenum/service_nodes/sn_multiple';
   String get typename => 'multiple';
+  const sn_multiple():super.ctor();
 }
 

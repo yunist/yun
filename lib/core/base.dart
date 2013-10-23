@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /**
+ * all base classes of the yun framework. and a top-level function to create instance by name
  *
  */
 
@@ -11,7 +12,7 @@ library yun;
 import "dart:isolate";
 import "dart:mirrors";
 import "package:js/js.dart" as js;
-import "package:json/json.dart" as json;
+//import "package:json/json.dart" as json;
 
 part "message.dart";
 part "service.dart";
@@ -27,19 +28,28 @@ List rootrouters=[];
 ReceivePort receiveport;
 
 /**
- *
+ * a base class of yun.
  */
 class base
 {
   static final String classpath='/base';
+  const base.ctor();
+  base();
 }
 
+/**
+ * a data class. should to implement serialization using mirrorsystem
+ */
 class data extends base
 {
   static final String classpath='/base/data';
-
+  const data.ctor():super.ctor();
+  data();
 }
 
+/**
+ * repleace list to inherit from yun base
+ */
 class collection extends data
 {
   static final String classpath='/base/data/collection';
@@ -58,6 +68,9 @@ class collection extends data
   }
 }
 
+/**
+ * repleace map to inherit from yun base
+ */
 class dictionary<T> extends data
 {
   static final String classpath='/base/data/dictionary<T>';
@@ -79,6 +92,9 @@ class dictionary<T> extends data
   }
 }
 
+/**
+ * queue
+ */
 class queue extends collection
 {
   static final String classpath='/base/data/collection/queue';
@@ -92,6 +108,9 @@ class queue extends collection
   }
 }
 
+/**
+ * stack
+ */
 class stack extends collection
 {
   static final String classpath='/base/data/collection/stack';
@@ -105,13 +124,20 @@ class stack extends collection
   }
 }
 
+/**
+ * class-based enumerated type
+ */
 abstract class typeenum extends data
 {
   static final String classpath='/base/data/collection/typeenum';
   String get typename;
   String get enumname;
+  const typeenum.ctor():super.ctor();
 }
 
+/**
+ * top-level function to create instance from class name
+ */
 dynamic CreateInstance(Symbol libraryname,Symbol classname,List arguments)
 {
   MirrorSystem mirrors = currentMirrorSystem();

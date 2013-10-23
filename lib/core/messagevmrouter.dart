@@ -25,6 +25,7 @@ class condition extends base
   String jsstr;
   bool checkit(js.Proxy jscontext)
   {
+    /// js should return a boolean to indicate it will excute something or not
     return jscontext.eval('(function(){'+jsstr+'}())');
   }
 }
@@ -34,6 +35,7 @@ class execute extends base
   String jsstr;
   js.Proxy doit(js.Proxy jscontext)
   {
+    /// js should return a map to indicate what's going to to. ex. sned translated message
     return jscontext.eval('(function(){'+jsstr+'}())');
   }
 }
@@ -78,7 +80,7 @@ class routervm extends yunvm
             fmsg=null;
           }
         });
-        js.retain(statustable);
+        //js.retain(statustable);
       });
     return fmsg;
   }

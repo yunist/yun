@@ -2,18 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+part of yun;
+
 /**
  *
  */
-
-part of yun;
-
 abstract class vmmessage extends message
 {
   static final String classpath='/base/message/vmmessage';
 }
 
-
+/**
+ *
+ */
 class vm_createinstance extends vmmessage
 {
   static final String classpath='/base/message/vmmessage/vm_createinstance';
@@ -25,23 +26,22 @@ class vm_createinstance extends vmmessage
   Symbol classname;
   SendPort router;
   SendPort owner;
-  String get json
-  {
 
-  }
 }
 
+/**
+ *
+ */
 class vm_closeinstance extends vmmessage
 {
   static final String classpath='/base/message/vmmessage/vm_closeinstance';
   static const String symbol='vm.closeinstance';
   String get msgid=>symbol;
-  String get json
-  {
-
-  }
 }
 
+/**
+ *
+ */
 abstract class yunvm extends base
 {
   SendPort owner;
@@ -67,7 +67,7 @@ abstract class yunvm extends base
       }
   }
 
-  void  post_to_owner(callbackmessage msg)
+  void post_to_owner(callbackmessage msg)
   {
     if (owner!=null)
     {
@@ -95,7 +95,9 @@ abstract class yunvm extends base
   void build_msg_handle();
 }
 
-
+/**
+ *
+ */
 vm_main()
 {
   String aliasname;
