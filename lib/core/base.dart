@@ -11,7 +11,6 @@ library yun;
 
 import "dart:isolate";
 import "dart:mirrors";
-import "package:js/js.dart" as js;
 //import "package:json/json.dart" as json;
 
 part "message.dart";
@@ -58,7 +57,7 @@ class data extends base
 /**
  * repleace list to inherit from yun base
  */
-class collection extends data
+class collection<T> extends data
 {
   static final String classpath='/base/data/collection';
   List items;
@@ -74,29 +73,39 @@ class collection extends data
   {
     items.add(item);
   }
+
+  dynamic operator[](dynamic key)
+  {
+    return items[key];
+  }
+
+  void operator[]=(dynamic key,T value)
+  {
+    items[key]=value;
+  }
 }
 
 /**
  * repleace map to inherit from yun base
  */
-class dictionary<T> extends data
+class dictionary<Tkey,Tvalue> extends data
 {
-  static final String classpath='/base/data/dictionary<T>';
-  Map<T,dynamic> items;
+  static final String classpath='/base/data/dictionary';
+  Map<Tkey,Tvalue> items;
 
-  dictionary([Map<T,dynamic> this.items]){}
+  dictionary([Map<Tkey,Tvalue> this.items]){}
 
-  dynamic operator[](T key)
+  Tvalue operator[](Tkey key)
   {
     return items[key];
   }
 
-  void operator[]=(T key,dynamic value)
+  void operator[]=(Tkey key,Tvalue value)
   {
-    return items[key]=value;
+    items[key]=value;
   }
 
-  dynamic remove(T key)
+  Tvalue remove(Tkey key)
   {
     return items.remove(key);
   }
@@ -105,14 +114,14 @@ class dictionary<T> extends data
 /**
  * queue
  */
-class queue extends collection
+class queue<T> extends collection<T>
 {
   static final String classpath='/base/data/collection/queue';
-  dynamic dequeue()
+  T dequeue()
   {
     return remove_first();
   }
-  void enqueue(dynamic item)
+  void enqueue(T item)
   {
     add_last(item);
   }
@@ -121,14 +130,14 @@ class queue extends collection
 /**
  * stack
  */
-class stack extends collection
+class stack<T> extends collection<T>
 {
   static final String classpath='/base/data/collection/stack';
-  dynamic pop()
+  T pop()
   {
     return remove_last();
   }
-  void push(dynamic item)
+  void push(T item)
   {
     add_last(item);
   }
@@ -142,16 +151,17 @@ abstract class typeenum extends data
   static final String classpath='/base/data/typeenum';
   String get typename;
   String get enumname;
+  dynamic get toobject;
   const typeenum.ctor():super.ctor();
 }
 
 /**
  * class-based enumerated type collection
  */
-class typelist extends dictionary<typeenum>
+class typelist extends dictionary<String,typeenum>
 {
   static final String classpath='/base/data/collection/typelist';
-  typelist([Map<typeenum,dynamic> list]):super(list){}
+  typelist([Map<String,typeenum> list]):super(list){}
 }
 
 /**

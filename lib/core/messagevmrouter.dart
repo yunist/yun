@@ -20,49 +20,97 @@ class rm_clearroles extends routermessage
   String get msgid=>symbol;
 }
 
+abstract class condition_type extends typeenum
+{
+  static final ct_must_true must_true=const ct_must_true();
+  static final ct_maybe_true maybe_true=const ct_maybe_true();
+  static final typelist types=new typelist({ct_must_true.symbol:condition_type.must_true
+                                            ,ct_maybe_true.symbol:condition_type.maybe_true});
+  static final String classpath='/base/typeenum/condition_type';
+  static const String symbol='condition.type';
+  String get enumname => symbol;
+  const condition_type.ctor():super.ctor();
+}
+
+class ct_must_true extends condition_type
+{
+  static final String classpath='/base/typeenum/condition_type/ct_must_true';
+  static const String symbol='must.true';
+  String get typename => symbol ;
+  dynamic get toobject => 0x00000001;
+  const ct_must_true():super.ctor();
+}
+
+class ct_maybe_true extends condition_type
+{
+  static final String classpath='/base/typeenum/condition_type/ct_maybe_true';
+  static const String symbol='maybe.true';
+  String get typename => symbol;
+  dynamic get toobject => 0x00000002;
+  const ct_maybe_true():super.ctor();
+}
+
+
 abstract class vmcontext extends base
+{
+
+}
+
+class vm_context extends collection<vmcontext> implements vmcontext
 {
 
 }
 
 abstract class vmcondition extends base
 {
-  //bool checkit(vmcontext context);
+  bool checkit(vmcontext context);
+}
 
-  String jsstr;
-  bool checkit(js.Proxy jscontext)
+class vc_collection extends dictionary<condition_type,vmcondition> implements vmcondition
+{
+  bool checkit(vmcontext context)
   {
-    /// js should return a boolean to indicate it will excute something or not
-    return jscontext.eval('(function(){'+jsstr+'}())');
-  }
 
+  }
 }
 
 abstract class vmexecute extends base
 {
+  vmcontext doit(vmcontext context);
+}
 
-  String jsstr;
-  js.Proxy doit(js.Proxy jscontext)
+class ve_collection extends collection<vmexecute> implements vmexecute
+{
+  vmcontext doit(vmcontext context)
   {
-    /// js should return a map to indicate what's going to to. ex. sned translated message
-    return jscontext.eval('(function(){'+jsstr+'}())');
+    for (vmexecute ve in this)
+      if ((context=ve.doit(context))==null)
+        break;
   }
-
 }
 
 class ve_sendmessage extends vmexecute
 {
+  vmcontext doit(vmcontext context)
+  {
 
+  }
 }
 
 class ve_setlocalstatus extends vmexecute
 {
+  vmcontext doit(vmcontext context)
+  {
 
+  }
 }
 
 class ve_unsetlocalstatus extends vmexecute
 {
+  vmcontext doit(vmcontext context)
+  {
 
+  }
 }
 
 class routervm extends yunvm
@@ -70,7 +118,7 @@ class routervm extends yunvm
 
   Map<String,SendPort> childports={};
   Map<RegExp,Map<vmcondition,vmexecute>> routetable={};
-  js.Proxy statustable=js.map({});
+  vmcontext localcontext;
 
   routervm(router,owner,aliasname,aliaspath):super(router,owner,aliasname,aliaspath)
   {
@@ -91,38 +139,35 @@ class routervm extends yunvm
 
   message parse_message(message msg)
   {
-    var fmsg=msg;
+    var localmsg=msg;
     if (msg is userdefinedmessage)
-      js.scoped((){
-        var jscontext=build_js_environment(js.context,msg);
-        routetable.forEach((RegExp msgpattern,Map<vmcondition,vmexecute> conditionmap){
-          if (msgpattern.hasMatch(msg.msgid))
+    {
+      var context=build_vm_context(localcontext);
+      routetable.forEach((RegExp msgpattern,Map<vmcondition,vmexecute> conditionmap)
           {
-            conditionmap.forEach((vmcondition cond,vmexecute exec){
-                if (cond.checkit(jscontext))
-                  jscontext=parse_js_result(jscontext, exec.doit(jscontext));
-              });
-            fmsg=null;
-          }
-        });
-        //js.retain(statustable);
-      });
-    return fmsg;
+            if (msgpattern.hasMatch(msg.msgid))
+            {
+              conditionmap.forEach((vmcondition cond,vmexecute exec)
+                  {
+                    if (cond.checkit(context));
+                      context=exec.doit(context);
+                  });
+              localmsg=null;
+            }
+          });
+      if (context!=null) localcontext=parse_vm_context(context);
+    }
+    return localmsg;
   }
 
-  js.Proxy build_js_environment(js.Proxy jscontext,userdefinedmessage msg)
+  vmcontext build_vm_context(vmcontext context)
   {
-    var msgmap=js.map(msg.to_map());
-    jscontext.srcmsg=msgmap;
-    jscontext.status=statustable;
-    return jscontext;
+    return context;
   }
 
-  js.Proxy parse_js_result(js.Proxy jscontext,js.Proxy result)
+  vmcontext parse_vm_context(vmcontext context)
   {
-
-    statustable=jscontext.status;
-    return jscontext;
+    return context;
   }
 
   void build_msg_handle()
@@ -136,7 +181,7 @@ class routervm extends yunvm
   }
 }
 
-class messagenodespool extends dictionary<String>
+class messagenodespool extends dictionary<String,messagevmnode>
 {
 
 }
@@ -152,7 +197,7 @@ class messagevmrouter extends messagevmnode
       vmrouter.delivery_message_from_vm(msg);
     else
     {
-      var node=wholenodes[msg.aliaspath] as messagevmnode;
+      var node=wholenodes[msg.aliaspath];
       if (node!=null)
         node.receive_message_from_vm(msg);
     }
