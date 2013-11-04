@@ -28,9 +28,17 @@ List rootrouters=[];
 ReceivePort receiveport;
 
 /**
+ * a base interface of yun.
+ */
+class ibase
+{
+  static final String classpath='/ibase';
+}
+
+/**
  * a base class of yun.
  */
-class base
+class base implements ibase
 {
   static final String classpath='/base';
   const base.ctor();
@@ -75,6 +83,8 @@ class dictionary<T> extends data
 {
   static final String classpath='/base/data/dictionary<T>';
   Map<T,dynamic> items;
+
+  dictionary([Map<T,dynamic> this.items]){}
 
   dynamic operator[](T key)
   {
@@ -129,10 +139,19 @@ class stack extends collection
  */
 abstract class typeenum extends data
 {
-  static final String classpath='/base/data/collection/typeenum';
+  static final String classpath='/base/data/typeenum';
   String get typename;
   String get enumname;
   const typeenum.ctor():super.ctor();
+}
+
+/**
+ * class-based enumerated type collection
+ */
+class typelist extends dictionary<typeenum>
+{
+  static final String classpath='/base/data/collection/typelist';
+  typelist([Map<typeenum,dynamic> list]):super(list){}
 }
 
 /**

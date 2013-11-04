@@ -6,11 +6,13 @@ part of servicebus;
 
 abstract class bus_type extends typeenum
 {
+  static final bt_stack stack=const bt_stack();
+  static final bt_queue queue=const bt_queue();
+  static final typelist types=new typelist({bus_type.queue:bt_queue.classpath
+                                            ,bus_type.stack:bt_stack.classpath});
   static final String classpath='/base/typeenum/bus_type';
   String get enumname => 'bus.type';
   const bus_type.ctor():super.ctor();
-  static const stack=const bt_stack();
-  static const queue=const bt_queue();
 }
 
 class bt_stack extends bus_type
@@ -22,7 +24,7 @@ class bt_stack extends bus_type
 
 class bt_queue extends bus_type
 {
-  static final String classpath='/base/typeenum/bus_type/bt_stack';
+  static final String classpath='/base/typeenum/bus_type/bt_queue';
   String get typename => 'queue';
   const bt_queue():super.ctor();
 }

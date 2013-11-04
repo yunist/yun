@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /**
- *
+ * need to be rewritten. js cannot run in dart vm
  */
 
 part of yun;
@@ -20,31 +20,56 @@ class rm_clearroles extends routermessage
   String get msgid=>symbol;
 }
 
-class condition extends base
+abstract class vmcontext extends base
 {
+
+}
+
+abstract class vmcondition extends base
+{
+  //bool checkit(vmcontext context);
+
   String jsstr;
   bool checkit(js.Proxy jscontext)
   {
     /// js should return a boolean to indicate it will excute something or not
     return jscontext.eval('(function(){'+jsstr+'}())');
   }
+
 }
 
-class execute extends base
+abstract class vmexecute extends base
 {
+
   String jsstr;
   js.Proxy doit(js.Proxy jscontext)
   {
     /// js should return a map to indicate what's going to to. ex. sned translated message
     return jscontext.eval('(function(){'+jsstr+'}())');
   }
+
+}
+
+class ve_sendmessage extends vmexecute
+{
+
+}
+
+class ve_setlocalstatus extends vmexecute
+{
+
+}
+
+class ve_unsetlocalstatus extends vmexecute
+{
+
 }
 
 class routervm extends yunvm
 {
 
   Map<String,SendPort> childports={};
-  Map<RegExp,Map<condition,execute>> routetable={};
+  Map<RegExp,Map<vmcondition,vmexecute>> routetable={};
   js.Proxy statustable=js.map({});
 
   routervm(router,owner,aliasname,aliaspath):super(router,owner,aliasname,aliaspath)
@@ -70,10 +95,10 @@ class routervm extends yunvm
     if (msg is userdefinedmessage)
       js.scoped((){
         var jscontext=build_js_environment(js.context,msg);
-        routetable.forEach((RegExp msgpattern,Map<condition,execute> conditionmap){
+        routetable.forEach((RegExp msgpattern,Map<vmcondition,vmexecute> conditionmap){
           if (msgpattern.hasMatch(msg.msgid))
           {
-            conditionmap.forEach((condition cond,execute exec){
+            conditionmap.forEach((vmcondition cond,vmexecute exec){
                 if (cond.checkit(jscontext))
                   jscontext=parse_js_result(jscontext, exec.doit(jscontext));
               });
