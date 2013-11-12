@@ -30,6 +30,8 @@ abstract class condition_type extends typeenum
   static const String symbol='condition.type';
   String get enumname => symbol;
   const condition_type.ctor():super.ctor();
+
+  bool check(bool a,bool b);
 }
 
 class ct_must_true extends condition_type
@@ -39,6 +41,7 @@ class ct_must_true extends condition_type
   String get typename => symbol ;
   dynamic get toobject => 0x00000001;
   const ct_must_true():super.ctor();
+  bool check(bool a,bool b)=>a&&b;
 }
 
 class ct_maybe_true extends condition_type
@@ -48,17 +51,96 @@ class ct_maybe_true extends condition_type
   String get typename => symbol;
   dynamic get toobject => 0x00000002;
   const ct_maybe_true():super.ctor();
+  bool check(bool a,bool b)=>a||b;
 }
 
 
 abstract class vmcontext extends base
 {
-
+  String get key;
+  dynamic getvalue(String keypath);
+  void setvalue(String keypath,dynamic value);
+  void unset(String keypath);
+  static List<String> keys(String keypath)
+  {
+    return keypath.split('.');
+  }
+  static String keypath(List<String> keys)
+  {
+    return keys.join('.');
+  }
 }
 
 class vm_context extends collection<vmcontext> implements vmcontext
 {
+  static const String symbol='';
+  String get key=>symbol;
+  dynamic getvalue(String keypath)
+  {
+    var keys=vmcontext.keys(keypath);
+    if (keys.length>0)
+    {
+      var key=keys.removeAt(0);
+      for (var vm in this)
+        if (vm.key==key)
+          return vm.getvalue(vmcontext.keypath(keys));
+    }
+  }
+  void setvalue(String keypath,dynamic value)
+  {
+    var keys=vmcontext.keys(keypath);
+    if (keys.length>0)
+    {
+      var key=keys.removeAt(0);
+      for (var vm in this)
+        if (vm.key==key)
+        {
+          vm.setvalue(vmcontext.keypath(keys),value);
+          break;
+        }
+    }
+  }
+  void unset(String keypath)
+  {
+    var keys=vmcontext.keys(keypath);
+    if (keys.length>0)
+    {
+      var key=keys.removeAt(0);
+      for (var vm in this)
+        if (vm.key==key)
+        {
+          vm.unset(vmcontext.keypath(keys));
+          break;
+        }
+    }
+  }
+}
 
+class vm_sourcemessage extends vmcontext
+{
+  static const String symbol='__srcmsg';
+  String get key=>symbol;
+  dynamic getvalue(String keypath){}
+  void setvalue(String keypath,dynamic value){}
+  void unset(String keypath){}
+}
+
+class vm_targetmessage extends vmcontext
+{
+  static const String symbol='__trgmsg';
+  String get key=>symbol;
+  dynamic getvalue(String keypath){}
+  void setvalue(String keypath,dynamic value){}
+  void unset(String keypath){}
+}
+
+class vm_localstatus extends vmcontext
+{
+  static const String symbol='__lclsts';
+  String get key=>symbol;
+  dynamic getvalue(String keypath){}
+  void setvalue(String keypath,dynamic value){}
+  void unset(String keypath){}
 }
 
 abstract class vmcondition extends base
@@ -70,8 +152,21 @@ class vc_collection extends dictionary<condition_type,vmcondition> implements vm
 {
   bool checkit(vmcontext context)
   {
-
+    bool result=true;
+    for (var vcpair in this)
+      result=vcpair.key.check(result, vcpair.value.checkit(context));
+    return result;
   }
+}
+
+class vc_checksourcemessage extends vmcondition
+{
+  bool checkit(vmcontext context){}
+}
+
+class vc_checklocalstatus extends vmcondition
+{
+  bool checkit(vmcontext context){}
 }
 
 abstract class vmexecute extends base
@@ -83,7 +178,7 @@ class ve_collection extends collection<vmexecute> implements vmexecute
 {
   vmcontext doit(vmcontext context)
   {
-    for (vmexecute ve in this)
+    for (var ve in this)
       if ((context=ve.doit(context))==null)
         break;
   }

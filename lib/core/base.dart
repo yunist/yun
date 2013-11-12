@@ -37,7 +37,7 @@ class ibase
 /**
  * a base class of yun.
  */
-class base implements ibase
+class base extends Object implements ibase
 {
   static final String classpath='/base';
   const base.ctor();
@@ -61,6 +61,9 @@ class collection<T> extends data
 {
   static final String classpath='/base/data/collection';
   List items;
+
+  Iterator<T> get iterator=>items.iterator;
+
   dynamic remove_first()
   {
     return items.removeAt(0);
@@ -85,6 +88,42 @@ class collection<T> extends data
   }
 }
 
+
+class dictionaryIterator<Tkey,Tvalue> implements Iterator<pair<Tkey,Tvalue>> {
+  final dictionary<Tkey,Tvalue> _iterable;
+  final int _length;
+  int _index;
+  pair<Tkey,Tvalue> _current;
+
+  dictionaryIterator(dictionary<Tkey,Tvalue> iterable)
+      : _iterable = iterable, _length = iterable.keys.length, _index = 0;
+
+  pair<Tkey,Tvalue> get current => _current;
+
+  bool moveNext() {
+    int length = _iterable.keys.length;
+    if (_length != length) {
+      throw new ConcurrentModificationError(_iterable);
+    }
+    if (_index >= length) {
+      _current = null;
+      return false;
+    }
+    var key=_iterable.keys.elementAt(_index);
+    _current = new pair(key,_iterable[key]);
+    _index++;
+    return true;
+  }
+}
+
+
+class pair<Tkey,Tvalue> extends data
+{
+  Tkey key;
+  Tvalue value;
+  pair(Tkey this.key,Tvalue this.value){}
+}
+
 /**
  * repleace map to inherit from yun base
  */
@@ -94,6 +133,10 @@ class dictionary<Tkey,Tvalue> extends data
   Map<Tkey,Tvalue> items;
 
   dictionary([Map<Tkey,Tvalue> this.items]){}
+
+  Iterator<pair<Tkey,Tvalue>> get iterator=>new dictionaryIterator(this);
+  Iterable<Tkey> get keys=>items.keys;
+  Iterable<Tvalue> get values=>items.values;
 
   Tvalue operator[](Tkey key)
   {
